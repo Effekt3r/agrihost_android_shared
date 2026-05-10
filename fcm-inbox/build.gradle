@@ -10,7 +10,7 @@ android {
     namespace 'za.co.mjrsolutions.shared.fcm_inbox'
     compileSdk 36
     defaultConfig {
-        minSdk 24
+        minSdk 23
         consumerProguardFiles "consumer-rules.pro"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
