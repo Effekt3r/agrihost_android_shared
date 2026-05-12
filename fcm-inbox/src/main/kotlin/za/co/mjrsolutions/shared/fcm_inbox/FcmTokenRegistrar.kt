@@ -15,13 +15,13 @@ internal class FcmTokenRegistrar(private val context: Context) {
 
     fun registerNow() {
         val username = cfg.usernameProvider() ?: return
-        Tasks.whenAll(
-            FirebaseInstallations.getInstance().id,
-            FirebaseMessaging.getInstance().token
-        ).addOnSuccessListener {
-            val iid = Tasks.await(FirebaseInstallations.getInstance().id)
-            val token = Tasks.await(FirebaseMessaging.getInstance().token)
-            writeDoc(username, iid, token)
+        val iidTask = FirebaseInstallations.getInstance().id
+        val tokenTask = FirebaseMessaging.getInstance().token
+        Tasks.whenAll(iidTask, tokenTask).addOnSuccessListener {
+            // Both tasks completed by the time this fires, so .result returns
+            // immediately. Using Tasks.await() here would throw because the
+            // success listener runs on the main thread.
+            writeDoc(username, iidTask.result, tokenTask.result)
         }
     }
 
@@ -75,9 +75,9 @@ internal class FcmTokenRegistrar(private val context: Context) {
             createdAt = now,
             lastSeen = now
         )
-        Tasks.await(
-            db.collection("users").document(username).collection("devices").document(installationId)
-                .set(device, com.google.firebase.firestore.SetOptions.merge())
-        )
+        // Fire-and-forget: Firestore set() returns a Task; awaiting it on the
+        // main thread crashes. We don't need the result here.
+        db.collection("users").document(username).collection("devices").document(installationId)
+            .set(device, com.google.firebase.firestore.SetOptions.merge())
     }
 }
