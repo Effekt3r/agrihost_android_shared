@@ -8,14 +8,6 @@ import androidx.fragment.app.FragmentActivity
 
 internal object BiometricHelper {
 
-    enum class BiometricStatus {
-        AVAILABLE,
-        NO_HARDWARE,
-        HARDWARE_UNAVAILABLE,
-        NOT_ENROLLED,
-        UNKNOWN_ERROR
-    }
-
     fun checkBiometricStatus(context: Context): BiometricStatus {
         val manager = BiometricManager.from(context)
         return when (manager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG)) {
