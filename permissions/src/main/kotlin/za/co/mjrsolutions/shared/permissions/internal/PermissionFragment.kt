@@ -4,6 +4,7 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import za.co.mjrsolutions.shared.permissions.AgriPermissions
 import za.co.mjrsolutions.shared.permissions.PermissionCallback
 import za.co.mjrsolutions.shared.permissions.PermissionType
 
@@ -26,6 +27,10 @@ internal class PermissionFragment : Fragment() {
 
     /** Enqueue a callback. If a request for [type] is already in flight, the callback joins the queue. */
     fun requestNow(type: PermissionType, callback: PermissionCallback) {
+        // Persist that we've asked at least once — enables Settings-variant detection later.
+        (activity as? FragmentActivity)?.let { act ->
+            AgriPermissions.markRequested(act, type)
+        }
         val list = pending.getOrPut(type) { mutableListOf() }
         list.add(callback)
         val alreadyInFlight = inFlight.values.contains(type)
