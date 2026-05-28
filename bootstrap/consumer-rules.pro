@@ -1,0 +1,1 @@
+-keep class za.co.mjrsolutions.shared.bootstrap.** { *; }
