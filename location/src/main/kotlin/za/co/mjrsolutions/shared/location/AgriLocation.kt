@@ -7,6 +7,10 @@ import android.provider.Settings
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
+import za.co.mjrsolutions.shared.permissions.AgriPermissions
+import za.co.mjrsolutions.shared.permissions.PermissionCallback
+import za.co.mjrsolutions.shared.permissions.PermissionType
+import za.co.mjrsolutions.shared.permissions.internal.LocationStateProbe
 
 object AgriLocation {
 
@@ -73,6 +77,37 @@ object AgriLocation {
     @JvmStatic
     fun startUpdates(context: Context, listener: LocationListener) {
         ContinuousStream.addListener(context.applicationContext, listener)
+    }
+
+    @JvmStatic
+    fun startUpdates(
+        activity: FragmentActivity,
+        listener: LocationListener,
+        gate: LocationGate
+    ) {
+        val appCtx = activity.applicationContext
+        if (AgriPermissions.isGranted(activity, PermissionType.LOCATION_FINE)) {
+            if (!LocationStateProbe.isLocationEnabled(appCtx)) {
+                gate.onLocationDisabled()
+                return
+            }
+            ContinuousStream.addListener(appCtx, listener)
+            gate.onReady()
+            return
+        }
+        AgriPermissions.request(activity, PermissionType.LOCATION_FINE, object : PermissionCallback {
+            override fun onGranted() {
+                if (!LocationStateProbe.isLocationEnabled(appCtx)) {
+                    gate.onLocationDisabled()
+                    return
+                }
+                ContinuousStream.addListener(appCtx, listener)
+                gate.onReady()
+            }
+            override fun onDenied(permanentlyDenied: List<String>) {
+                gate.onPermissionDenied(permanent = permanentlyDenied.isNotEmpty())
+            }
+        })
     }
 
     @JvmStatic
