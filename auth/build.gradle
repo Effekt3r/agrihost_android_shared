@@ -32,6 +32,7 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'com.google.android.gms:play-services-tasks:18.1.0'
     implementation 'androidx.appcompat:appcompat:1.7.0'
+    compileOnly 'com.google.firebase:firebase-crashlytics:19.0.3'
 
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.jetbrains.kotlin:kotlin-test:1.9.24'

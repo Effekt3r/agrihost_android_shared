@@ -40,6 +40,7 @@ object AgriAuth {
                 TokenStore.saveToken(user.apiToken)
                 TokenStore.saveUser(user)
                 Thread { OfflineAuthStore.upsertUser(user, password) }.start()
+                CrashlyticsKeys.setForUser(user, cfg, offlineLogin = false)
                 callback.onSuccess(user)
             },
             onFailure = {
@@ -146,13 +147,16 @@ object AgriAuth {
         if (clearBiometrics) {
             BiometricCredentialStore.clear()
         }
+        CrashlyticsKeys.clear()
     }
 
     private fun attemptOfflineLogin(username: String, password: String, callback: AuthCallback) {
+        val cfg = config
         Thread {
             val user = OfflineAuthStore.verifyOffline(username, password)
             if (user != null) {
                 TokenStore.saveUser(user)
+                CrashlyticsKeys.setForUser(user, cfg, offlineLogin = true)
                 callback.onOfflineSuccess(user)
             } else {
                 callback.onFailure(AuthError(AuthErrorType.OFFLINE_NOT_AVAILABLE, "Offline login failed"))
