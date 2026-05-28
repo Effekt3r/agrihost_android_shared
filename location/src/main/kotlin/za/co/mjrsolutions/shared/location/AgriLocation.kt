@@ -20,9 +20,18 @@ object AgriLocation {
         )
 
     @JvmStatic
-    fun init(config: LocationConfig) {
+    fun configure(config: LocationConfig) {
         configRef = config
         ContinuousStream.init(config)
+    }
+
+    @Deprecated(
+        message = "Renamed to configure(). init() will be removed in Plan 5.",
+        replaceWith = ReplaceWith("configure(config)")
+    )
+    @JvmStatic
+    fun init(config: LocationConfig) {
+        configure(config)
     }
 
     @JvmStatic
