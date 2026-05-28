@@ -38,11 +38,3 @@ interface BiometricSetupCallback {
     fun onSuccess()
     fun onFailure(error: AuthError)
 }
-
-enum class BiometricStatus {
-    AVAILABLE,
-    NO_HARDWARE,
-    HARDWARE_UNAVAILABLE,
-    NOT_ENROLLED,
-    UNKNOWN_ERROR
-}

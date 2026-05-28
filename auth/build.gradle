@@ -33,6 +33,7 @@ dependencies {
     implementation 'com.google.android.gms:play-services-tasks:18.1.0'
     implementation 'androidx.appcompat:appcompat:1.7.0'
     compileOnly 'com.google.firebase:firebase-crashlytics:19.0.3'
+    implementation project(':permissions')
 
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.jetbrains.kotlin:kotlin-test:2.1.20'

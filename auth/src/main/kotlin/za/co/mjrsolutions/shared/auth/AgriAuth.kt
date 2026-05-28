@@ -2,6 +2,8 @@ package za.co.mjrsolutions.shared.auth
 
 import android.content.Context
 import androidx.fragment.app.FragmentActivity
+import za.co.mjrsolutions.shared.permissions.BiometricHelper
+import za.co.mjrsolutions.shared.permissions.BiometricStatus
 
 object AgriAuth {
 
