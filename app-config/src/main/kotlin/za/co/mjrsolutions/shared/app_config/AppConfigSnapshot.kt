@@ -5,5 +5,6 @@ data class AppConfigSnapshot(
     val minVersion: String?,
     val maintenanceMessage: String?,
     val updateRequired: Boolean,
+    val forceUpdate: Boolean,
     val extras: Map<String, Any?>
 )

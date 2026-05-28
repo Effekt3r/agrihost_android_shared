@@ -10,7 +10,40 @@ import androidx.appcompat.app.AlertDialog
 object AppUpdateUi {
 
     /**
-     * Show a non-cancellable update dialog. The positive button opens Play Store for [packageName].
+     * Show an update dialog. The positive button opens Play Store for [packageName].
+     * If [laterButtonText] is non-null, a dismissible "Later" button is shown.
+     * Pass null to make the dialog non-cancellable (force update).
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun showUpdateDialog(
+        activity: Activity,
+        title: String,
+        message: String,
+        updateButtonText: String,
+        laterButtonText: String? = null,
+        packageName: String = activity.packageName,
+        onLater: Runnable? = null
+    ) {
+        if (activity.isFinishing || activity.isDestroyed) return
+        val builder = AlertDialog.Builder(activity)
+            .setTitle(title)
+            .setMessage(message)
+            .setCancelable(laterButtonText != null)
+            .setPositiveButton(updateButtonText) { _, _ ->
+                openPlayStore(activity, packageName)
+            }
+        if (laterButtonText != null) {
+            builder.setNegativeButton(laterButtonText) { dialog, _ ->
+                dialog.dismiss()
+                onLater?.run()
+            }
+        }
+        builder.show()
+    }
+
+    /**
+     * Backwards-compatible alias for [showUpdateDialog]. Always non-cancellable.
      */
     @JvmStatic
     @JvmOverloads
@@ -22,15 +55,14 @@ object AppUpdateUi {
         packageName: String = activity.packageName,
         cancellable: Boolean = false
     ) {
-        if (activity.isFinishing || activity.isDestroyed) return
-        AlertDialog.Builder(activity)
-            .setTitle(title)
-            .setMessage(message)
-            .setCancelable(cancellable)
-            .setPositiveButton(updateButtonText) { _, _ ->
-                openPlayStore(activity, packageName)
-            }
-            .show()
+        showUpdateDialog(
+            activity = activity,
+            title = title,
+            message = message,
+            updateButtonText = updateButtonText,
+            laterButtonText = null,
+            packageName = packageName
+        )
     }
 
     /**

@@ -52,6 +52,9 @@ object AgriAppConfig {
     fun getMaintenanceMessage(): String? = latestSnapshot?.maintenanceMessage
 
     @JvmStatic
+    fun isForceUpdate(): Boolean = latestSnapshot?.forceUpdate ?: false
+
+    @JvmStatic
     fun getExtras(): Map<String, Any?> = latestSnapshot?.extras ?: emptyMap()
 
     private fun startListening() {
@@ -74,11 +77,12 @@ object AgriAppConfig {
                 val data = snapshot.data ?: emptyMap()
                 val minVersion = data["minVersion"] as? String
                 val maintenanceMessage = data["maintenanceMessage"] as? String
+                val forceUpdate = data["forceUpdate"] as? Boolean ?: false
                 val updateRequired = !minVersion.isNullOrBlank() &&
                     VersionCompare.compare(cfg.currentVersion, minVersion) < 0
 
                 // Extras = everything except the known typed fields
-                val known = setOf("minVersion", "maintenanceMessage")
+                val known = setOf("minVersion", "maintenanceMessage", "forceUpdate")
                 val extras = data.filterKeys { it !in known }
 
                 val snap = AppConfigSnapshot(
@@ -86,6 +90,7 @@ object AgriAppConfig {
                     minVersion = minVersion,
                     maintenanceMessage = maintenanceMessage,
                     updateRequired = updateRequired,
+                    forceUpdate = forceUpdate,
                     extras = extras
                 )
                 latestSnapshot = snap
