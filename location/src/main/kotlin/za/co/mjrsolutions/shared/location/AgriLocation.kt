@@ -106,6 +106,53 @@ object AgriLocation {
     }
 
     @JvmStatic
+    @JvmOverloads
+    fun requestFreshFixWithProgress(
+        activity: FragmentActivity,
+        callback: FixCallback,
+        gate: LocationGate,
+        dialogTitle: String = DEFAULT_DIALOG_TITLE,
+        dialogMessage: String = DEFAULT_DIALOG_MESSAGE
+    ) {
+        val appCtx = activity.applicationContext
+
+        fun startWithProgress() {
+            val dialog = LocationProgressDialog(activity)
+            dialog.show(dialogTitle, dialogMessage)
+            val wrapped = object : FixCallback {
+                override fun onFix(fix: AgriFix) { dialog.dismiss(); callback.onFix(fix) }
+                override fun onTimeout(bestEffort: AgriFix?) { dialog.dismiss(); callback.onTimeout(bestEffort) }
+                override fun onPermissionDenied() { dialog.dismiss(); callback.onPermissionDenied() }
+                override fun onLocationDisabled() { dialog.dismiss(); callback.onLocationDisabled() }
+            }
+            FreshFixRequester(appCtx, config, wrapped).start()
+        }
+
+        if (AgriPermissions.isGranted(activity, PermissionType.LOCATION_FINE)) {
+            if (!LocationStateProbe.isLocationEnabled(appCtx)) {
+                gate.onLocationDisabled()
+                return
+            }
+            gate.onReady()
+            startWithProgress()
+            return
+        }
+        AgriPermissions.request(activity, PermissionType.LOCATION_FINE, object : PermissionCallback {
+            override fun onGranted() {
+                if (!LocationStateProbe.isLocationEnabled(appCtx)) {
+                    gate.onLocationDisabled()
+                    return
+                }
+                gate.onReady()
+                startWithProgress()
+            }
+            override fun onDenied(permanentlyDenied: List<String>) {
+                gate.onPermissionDenied(permanent = permanentlyDenied.isNotEmpty())
+            }
+        })
+    }
+
+    @JvmStatic
     fun startUpdates(context: Context, listener: LocationListener) {
         ContinuousStream.addListener(context.applicationContext, listener)
     }
