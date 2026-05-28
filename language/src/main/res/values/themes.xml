@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Minimal Material Components theme for use in tests and host apps that do not supply one -->
+    <style name="Theme.AgriLang.Base" parent="Theme.MaterialComponents.Light.NoActionBar" />
+</resources>

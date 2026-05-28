@@ -15,3 +15,4 @@ rootProject.name = "agrihost_android_shared"
 include ':fcm-inbox'
 include ':auth'
 include ':app-config'
+include ':language'
