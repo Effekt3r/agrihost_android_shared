@@ -44,6 +44,37 @@ object AgriLocation {
     }
 
     @JvmStatic
+    fun requestFreshFix(
+        activity: FragmentActivity,
+        callback: FixCallback,
+        gate: LocationGate
+    ) {
+        val appCtx = activity.applicationContext
+        if (AgriPermissions.isGranted(activity, PermissionType.LOCATION_FINE)) {
+            if (!LocationStateProbe.isLocationEnabled(appCtx)) {
+                gate.onLocationDisabled()
+                return
+            }
+            gate.onReady()
+            FreshFixRequester(appCtx, config, callback).start()
+            return
+        }
+        AgriPermissions.request(activity, PermissionType.LOCATION_FINE, object : PermissionCallback {
+            override fun onGranted() {
+                if (!LocationStateProbe.isLocationEnabled(appCtx)) {
+                    gate.onLocationDisabled()
+                    return
+                }
+                gate.onReady()
+                FreshFixRequester(appCtx, config, callback).start()
+            }
+            override fun onDenied(permanentlyDenied: List<String>) {
+                gate.onPermissionDenied(permanent = permanentlyDenied.isNotEmpty())
+            }
+        })
+    }
+
+    @JvmStatic
     @JvmOverloads
     fun requestFreshFixWithProgress(
         activity: FragmentActivity,
