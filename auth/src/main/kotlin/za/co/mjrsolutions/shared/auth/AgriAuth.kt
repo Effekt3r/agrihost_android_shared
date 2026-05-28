@@ -113,6 +113,10 @@ object AgriAuth {
 
     fun hasSavedCredentials(): Boolean = BiometricCredentialStore.hasSavedCredentials()
 
+    /** Returns the most recently-used username, preferring biometric-saved over offline DB. */
+    fun getLastUsername(): String? =
+        BiometricCredentialStore.getUsername() ?: OfflineAuthStore.getLastUsername()
+
     fun isBiometricAvailable(context: Context): Boolean = BiometricHelper.isBiometricAvailable(context)
 
     fun checkBiometricStatus(context: Context): BiometricStatus =

@@ -76,6 +76,17 @@ internal object OfflineAuthStore {
         }
     }
 
+    fun getLastUsername(): String? {
+        val db = dbHelper?.readableDatabase ?: return null
+        val cursor = db.query(
+            TABLE, arrayOf(COL_USERNAME), null, null, null, null,
+            "$COL_LAST_LOGIN_AT DESC", "1"
+        )
+        cursor.use {
+            return if (it.moveToFirst()) it.getString(0) else null
+        }
+    }
+
     fun clear() {
         dbHelper?.writableDatabase?.delete(TABLE, null, null)
     }
