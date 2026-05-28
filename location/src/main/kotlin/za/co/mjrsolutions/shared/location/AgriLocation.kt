@@ -1,11 +1,6 @@
 package za.co.mjrsolutions.shared.location
 
-import android.app.Activity
 import android.content.Context
-import android.content.Intent
-import android.provider.Settings
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import za.co.mjrsolutions.shared.permissions.AgriPermissions
 import za.co.mjrsolutions.shared.permissions.PermissionCallback
@@ -38,6 +33,10 @@ object AgriLocation {
         configure(config)
     }
 
+    @Deprecated(
+        message = "Migrate to requestFreshFix(activity, callback, gate). Removed in Plan 5.",
+        replaceWith = ReplaceWith("requestFreshFix(activity, callback, gate)")
+    )
     @JvmStatic
     fun requestFreshFix(context: Context, callback: FixCallback) {
         FreshFixRequester(context.applicationContext, config, callback).start()
@@ -74,6 +73,10 @@ object AgriLocation {
         })
     }
 
+    @Deprecated(
+        message = "Migrate to requestFreshFixWithProgress(activity, callback, gate, ...) for permission self-gating. Removed in Plan 5.",
+        replaceWith = ReplaceWith("requestFreshFixWithProgress(activity, callback, gate, dialogTitle, dialogMessage)")
+    )
     @JvmStatic
     @JvmOverloads
     fun requestFreshFixWithProgress(
@@ -152,6 +155,13 @@ object AgriLocation {
         })
     }
 
+    @Deprecated(
+        message = "Migrate to startUpdates(activity, listener, gate) for permission self-gating. Removed in Plan 5.",
+        replaceWith = ReplaceWith(
+            "startUpdates(activity, listener, gate)",
+            "androidx.fragment.app.FragmentActivity"
+        )
+    )
     @JvmStatic
     fun startUpdates(context: Context, listener: LocationListener) {
         ContinuousStream.addListener(context.applicationContext, listener)
@@ -198,33 +208,4 @@ object AgriLocation {
 
     @JvmStatic
     fun getLatestAny(): AgriFix? = ContinuousStream.getLatestAny()
-
-    @JvmStatic
-    fun hasLocationPermission(context: Context): Boolean {
-        return ContextCompat.checkSelfPermission(
-            context, android.Manifest.permission.ACCESS_FINE_LOCATION
-        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-    }
-
-    @JvmStatic
-    fun requestLocationPermission(activity: Activity, requestCode: Int) {
-        ActivityCompat.requestPermissions(
-            activity,
-            arrayOf(
-                android.Manifest.permission.ACCESS_FINE_LOCATION,
-                android.Manifest.permission.ACCESS_COARSE_LOCATION
-            ),
-            requestCode
-        )
-    }
-
-    @JvmStatic
-    fun isLocationEnabled(context: Context): Boolean = FusedClient.isLocationEnabled(context)
-
-    @JvmStatic
-    fun showLocationSettings(context: Context) {
-        val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        context.startActivity(intent)
-    }
 }
