@@ -8,9 +8,14 @@ import androidx.fragment.app.FragmentActivity
 
 internal object BiometricHelper {
 
+    // BIOMETRIC_WEAK accepts Class-2 and Class-3 biometrics. Required because the
+    // Samsung tablets used in the field have face unlock only (Class-2) and no
+    // fingerprint sensor — BIOMETRIC_STRONG would exclude them entirely.
+    private const val ALLOWED_AUTHENTICATORS = BiometricManager.Authenticators.BIOMETRIC_WEAK
+
     fun checkBiometricStatus(context: Context): BiometricStatus {
         val manager = BiometricManager.from(context)
-        return when (manager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG)) {
+        return when (manager.canAuthenticate(ALLOWED_AUTHENTICATORS)) {
             BiometricManager.BIOMETRIC_SUCCESS -> BiometricStatus.AVAILABLE
             BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE -> BiometricStatus.NO_HARDWARE
             BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE -> BiometricStatus.HARDWARE_UNAVAILABLE
@@ -68,7 +73,7 @@ internal object BiometricHelper {
             .setTitle(title)
             .setSubtitle(subtitle)
             .setNegativeButtonText(negativeButtonText)
-            .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG)
+            .setAllowedAuthenticators(ALLOWED_AUTHENTICATORS)
             .build()
 
         prompt.authenticate(info)
