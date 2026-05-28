@@ -48,7 +48,14 @@ object AgriAuth {
         )
     }
 
-    fun loginWithBiometrics(activity: FragmentActivity, callback: AuthCallback) {
+    @JvmOverloads
+    fun loginWithBiometrics(
+        activity: FragmentActivity,
+        callback: AuthCallback,
+        title: String = "Login",
+        subtitle: String = "Verify your identity",
+        negativeButtonText: String = "Cancel"
+    ) {
         if (!hasSavedCredentials()) {
             callback.onFailure(AuthError(AuthErrorType.BIOMETRIC_NOT_AVAILABLE, "No saved credentials"))
             return
@@ -60,9 +67,9 @@ object AgriAuth {
 
         BiometricHelper.prompt(
             activity = activity,
-            title = "Login",
-            subtitle = "Verify your identity",
-            negativeButtonText = "Cancel",
+            title = title,
+            subtitle = subtitle,
+            negativeButtonText = negativeButtonText,
             onSuccess = {
                 val username = BiometricCredentialStore.getUsername()!!
                 val password = BiometricCredentialStore.getPassword()!!
@@ -74,11 +81,15 @@ object AgriAuth {
         )
     }
 
+    @JvmOverloads
     fun enableBiometricRememberMe(
         activity: FragmentActivity,
         username: String,
         password: String,
-        callback: BiometricSetupCallback
+        callback: BiometricSetupCallback,
+        title: String = "Enable quick login",
+        subtitle: String = "Verify your identity to save credentials",
+        negativeButtonText: String = "Cancel"
     ) {
         if (!isBiometricAvailable(activity)) {
             callback.onFailure(AuthError(AuthErrorType.BIOMETRIC_NOT_AVAILABLE, "Biometric not available"))
@@ -87,9 +98,9 @@ object AgriAuth {
 
         BiometricHelper.prompt(
             activity = activity,
-            title = "Enable quick login",
-            subtitle = "Verify your identity to save credentials",
-            negativeButtonText = "Cancel",
+            title = title,
+            subtitle = subtitle,
+            negativeButtonText = negativeButtonText,
             onSuccess = {
                 BiometricCredentialStore.saveCredentials(username, password)
                 callback.onSuccess()
