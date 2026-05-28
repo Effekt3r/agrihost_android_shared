@@ -55,6 +55,18 @@ object AgriAppConfig {
     fun isForceUpdate(): Boolean = latestSnapshot?.forceUpdate ?: false
 
     @JvmStatic
+    fun getAnnouncementMessage(): String? = latestSnapshot?.announcementMessage
+
+    @JvmStatic
+    fun isMaintenanceMode(): Boolean = latestSnapshot?.maintenanceMode ?: false
+
+    @JvmStatic
+    fun getMinSyncIntervalMinutes(): Int? = latestSnapshot?.minSyncIntervalMinutes
+
+    @JvmStatic
+    fun isDebugLoggingEnabled(): Boolean = latestSnapshot?.debugLoggingEnabled ?: false
+
+    @JvmStatic
     fun getExtras(): Map<String, Any?> = latestSnapshot?.extras ?: emptyMap()
 
     private fun startListening() {
@@ -78,11 +90,23 @@ object AgriAppConfig {
                 val minVersion = data["minVersion"] as? String
                 val maintenanceMessage = data["maintenanceMessage"] as? String
                 val forceUpdate = data["forceUpdate"] as? Boolean ?: false
+                val announcementMessage = data["announcementMessage"] as? String
+                val maintenanceMode = data["maintenanceMode"] as? Boolean ?: false
+                val minSyncIntervalMinutes = (data["minSyncIntervalMinutes"] as? Number)?.toInt()
+                val debugLoggingEnabled = data["debugLoggingEnabled"] as? Boolean ?: false
                 val updateRequired = !minVersion.isNullOrBlank() &&
                     VersionCompare.compare(cfg.currentVersion, minVersion) < 0
 
                 // Extras = everything except the known typed fields
-                val known = setOf("minVersion", "maintenanceMessage", "forceUpdate")
+                val known = setOf(
+                    "minVersion",
+                    "maintenanceMessage",
+                    "forceUpdate",
+                    "announcementMessage",
+                    "maintenanceMode",
+                    "minSyncIntervalMinutes",
+                    "debugLoggingEnabled"
+                )
                 val extras = data.filterKeys { it !in known }
 
                 val snap = AppConfigSnapshot(
@@ -91,6 +115,10 @@ object AgriAppConfig {
                     maintenanceMessage = maintenanceMessage,
                     updateRequired = updateRequired,
                     forceUpdate = forceUpdate,
+                    announcementMessage = announcementMessage,
+                    maintenanceMode = maintenanceMode,
+                    minSyncIntervalMinutes = minSyncIntervalMinutes,
+                    debugLoggingEnabled = debugLoggingEnabled,
                     extras = extras
                 )
                 latestSnapshot = snap
