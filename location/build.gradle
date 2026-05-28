@@ -31,6 +31,7 @@ android {
 
 dependencies {
     implementation project(':permissions')
+    implementation project(':language')
     implementation 'com.google.android.gms:play-services-location:21.3.0'
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'androidx.lifecycle:lifecycle-process:2.8.7'

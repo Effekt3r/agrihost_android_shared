@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.provider.Settings
 import androidx.fragment.app.FragmentActivity
+import za.co.mjrsolutions.shared.language.AgriLang
 import za.co.mjrsolutions.shared.permissions.AgriPermissions
 import za.co.mjrsolutions.shared.permissions.PermissionCallback
 import za.co.mjrsolutions.shared.permissions.PermissionType
@@ -12,8 +13,9 @@ import za.co.mjrsolutions.shared.permissions.internal.LocationStateProbe
 object AgriLocation {
 
     @Volatile private var configRef: LocationConfig? = null
-    private const val DEFAULT_DIALOG_TITLE = "Getting GPS fix"
-    private const val DEFAULT_DIALOG_MESSAGE = "Please wait while we lock onto your location…"
+
+    private const val KEY_DIALOG_TITLE = "location_progress_title"
+    private const val KEY_DIALOG_BODY = "location_progress_body"
 
     private val config: LocationConfig
         get() = configRef ?: error(
@@ -84,8 +86,8 @@ object AgriLocation {
     fun requestFreshFixWithProgress(
         activity: FragmentActivity,
         callback: FixCallback,
-        dialogTitle: String = DEFAULT_DIALOG_TITLE,
-        dialogMessage: String = DEFAULT_DIALOG_MESSAGE
+        dialogTitle: String = AgriLang.getString(KEY_DIALOG_TITLE),
+        dialogMessage: String = AgriLang.getString(KEY_DIALOG_BODY)
     ) {
         val dialog = LocationProgressDialog(activity)
         dialog.show(dialogTitle, dialogMessage)
@@ -116,8 +118,8 @@ object AgriLocation {
         activity: FragmentActivity,
         callback: FixCallback,
         gate: LocationGate,
-        dialogTitle: String = DEFAULT_DIALOG_TITLE,
-        dialogMessage: String = DEFAULT_DIALOG_MESSAGE
+        dialogTitle: String = AgriLang.getString(KEY_DIALOG_TITLE),
+        dialogMessage: String = AgriLang.getString(KEY_DIALOG_BODY)
     ) {
         val appCtx = activity.applicationContext
 
