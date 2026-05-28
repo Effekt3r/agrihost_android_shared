@@ -1,6 +1,8 @@
 package za.co.mjrsolutions.shared.location
 
 import android.content.Context
+import android.content.Intent
+import android.provider.Settings
 import androidx.fragment.app.FragmentActivity
 import za.co.mjrsolutions.shared.permissions.AgriPermissions
 import za.co.mjrsolutions.shared.permissions.PermissionCallback
@@ -208,4 +210,17 @@ object AgriLocation {
 
     @JvmStatic
     fun getLatestAny(): AgriFix? = ContinuousStream.getLatestAny()
+
+    @Deprecated(
+        message = "Use LocationStateProbe.openLocationSettings(context) directly. Removed in Plan 5.",
+        replaceWith = ReplaceWith(
+            "context.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))",
+            "android.content.Intent",
+            "android.provider.Settings"
+        )
+    )
+    @JvmStatic
+    fun showLocationSettings(context: Context) {
+        context.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+    }
 }
