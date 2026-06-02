@@ -9,6 +9,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import za.co.mjrsolutions.shared.network.log.NoopLogSink
+import za.co.mjrsolutions.shared.network.outbox.OutboxDatabase
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -19,6 +20,7 @@ class AgriNetworkEngineTest {
 
     @Before fun setUp() {
         server = MockWebServer(); server.start()
+        OutboxDatabase.resetForTest()
         AgriNetwork.init(
             ApplicationProvider.getApplicationContext(),
             AgriNetworkConfig(
@@ -29,7 +31,10 @@ class AgriNetworkEngineTest {
         )
     }
 
-    @After fun tearDown() { server.shutdown() }
+    @After fun tearDown() {
+        server.shutdown()
+        OutboxDatabase.resetForTest()
+    }
 
     @Test
     fun `GET success returns body and sends auth header`() {

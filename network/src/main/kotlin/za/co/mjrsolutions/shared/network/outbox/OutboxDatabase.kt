@@ -21,5 +21,13 @@ abstract class OutboxDatabase : RoomDatabase() {
                     "agri_outbox.db"
                 ).build().also { INSTANCE = it }
             }
+
+        /** Close and clear the singleton so tests that call AgriNetwork.init() get a fresh DB. */
+        fun resetForTest() {
+            synchronized(this) {
+                INSTANCE?.close()
+                INSTANCE = null
+            }
+        }
     }
 }
