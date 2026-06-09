@@ -120,6 +120,19 @@ object AgriAuth {
     fun getLastUsername(): String? =
         BiometricCredentialStore.getUsername() ?: OfflineAuthStore.getLastUsername()
 
+    /**
+     * One-time migration: seed an existing local credential into the offline store so an
+     * upgrading user can log in offline before their first online login on the new build.
+     * Idempotent — only seeds when absent. Use [seedOfflineFromHash] when the legacy store
+     * holds a BCrypt hash (MR); [seedOfflineFromPlaintext] when it holds the plaintext
+     * password (hael/vrugte/Brand). Returns true if a row was seeded.
+     */
+    fun seedOfflineFromPlaintext(user: AuthUser, plainPassword: String): Boolean =
+        OfflineAuthStore.seedWithPlaintext(user, plainPassword)
+
+    fun seedOfflineFromHash(user: AuthUser, bcryptHash: String): Boolean =
+        OfflineAuthStore.seedWithHash(user, bcryptHash)
+
     fun isBiometricAvailable(context: Context): Boolean = BiometricHelper.isBiometricAvailable(context)
 
     fun checkBiometricStatus(context: Context): BiometricStatus =

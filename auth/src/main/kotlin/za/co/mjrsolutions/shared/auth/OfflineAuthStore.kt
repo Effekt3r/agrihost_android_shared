@@ -87,6 +87,47 @@ internal object OfflineAuthStore {
         }
     }
 
+    /** True if a credential row already exists for [username]. */
+    fun hasUser(username: String): Boolean {
+        val db = dbHelper?.readableDatabase ?: return false
+        db.query(TABLE, arrayOf(COL_USERNAME), "$COL_USERNAME = ?", arrayOf(username), null, null, null)
+            .use { return it.moveToFirst() }
+    }
+
+    /**
+     * Seed a credential row from a pre-computed BCrypt hash, but ONLY if no row exists
+     * for this username yet. Used to migrate an existing legacy credential into agriauth.db
+     * on first launch of the shared-auth build, so upgrades don't lock field users out of
+     * offline login. Never overwrites a row written by a real online login (it is fresher).
+     * @return true if a row was seeded; false if one already existed or the hash was blank.
+     */
+    fun seedWithHash(user: AuthUser, passwordHash: String): Boolean {
+        if (passwordHash.isBlank()) return false
+        val db = dbHelper?.writableDatabase ?: return false
+        if (hasUser(user.username)) return false
+        val values = ContentValues().apply {
+            put(COL_USERNAME, user.username)
+            put(COL_PASSWORD_HASH, passwordHash)
+            put(COL_SERVER_USER_ID, user.serverUserId)
+            put(COL_NAME, user.name)
+            put(COL_SURNAME, user.surname)
+            put(COL_EMAIL, user.email)
+            put(COL_LANGUAGE_CODE, user.languageCode)
+            put(COL_LANGUAGE_VERSION, user.languageVersion)
+            put(COL_LAST_LOGIN_AT, System.currentTimeMillis())
+        }
+        return db.insertWithOnConflict(TABLE, null, values, SQLiteDatabase.CONFLICT_IGNORE) != -1L
+    }
+
+    /** Hash [plainPassword] with the same scheme used on online login, then seed-if-absent. */
+    fun seedWithPlaintext(user: AuthUser, plainPassword: String): Boolean {
+        if (plainPassword.isBlank()) return false
+        if (hasUser(user.username)) return false
+        val hash = BCrypt.with(BCrypt.Version.VERSION_2Y)
+            .hashToString(BCRYPT_COST, plainPassword.toCharArray())
+        return seedWithHash(user, hash)
+    }
+
     fun clear() {
         dbHelper?.writableDatabase?.delete(TABLE, null, null)
     }
