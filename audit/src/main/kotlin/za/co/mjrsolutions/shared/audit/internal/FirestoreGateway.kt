@@ -15,6 +15,7 @@ internal interface FirestoreGateway {
      * offline sync defers its notification until connectivity returns instead of attempting
      * (and losing) it immediately. On failure the write is crash-reported and [onCommitted]
      * never runs.
+     * [onCommitted] is invoked on the main thread; it must be cheap and non-throwing.
      */
     fun writeMessage(message: AuditMessage, onCommitted: () -> Unit)
 
@@ -37,7 +38,9 @@ internal class FirebaseFirestoreGateway : FirestoreGateway {
 
     override fun writeMessage(message: AuditMessage, onCommitted: () -> Unit) {
         db.collection("messages").add(message.toFirestoreMap())
-            .addOnSuccessListener { onCommitted() }
+            .addOnSuccessListener {
+                try { onCommitted() } catch (t: Throwable) { Crash.record(t) }
+            }
             .addOnFailureListener { Crash.record(it) }
     }
 

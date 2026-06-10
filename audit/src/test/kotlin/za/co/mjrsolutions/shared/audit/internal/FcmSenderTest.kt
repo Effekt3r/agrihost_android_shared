@@ -33,6 +33,7 @@ class FcmSenderTest {
         sender().send("oauth-token", AdminToken("u1", "tok-1"), message)
 
         val recorded = server.takeRequest()
+        assertEquals("POST", recorded.method)
         assertEquals("Bearer oauth-token", recorded.getHeader("Authorization"))
         assertTrue(recorded.getHeader("Content-Type")!!.startsWith("application/json"))
         val msg = JsonParser.parseString(recorded.body.readUtf8())
@@ -41,6 +42,7 @@ class FcmSenderTest {
         assertEquals("T", msg.getAsJsonObject("notification").get("title").asString)
         assertEquals("B", msg.getAsJsonObject("notification").get("body").asString)
         assertEquals("/path", msg.getAsJsonObject("data").get("path").asString)
+        assertTrue(cleared.isEmpty())
     }
 
     @Test
@@ -61,6 +63,13 @@ class FcmSenderTest {
     fun `500 does not clear and does not throw`() {
         server.enqueue(MockResponse().setResponseCode(500))
         sender().send("t", AdminToken("u3", "tok-3"), message)
+        assertTrue(cleared.isEmpty())
+    }
+
+    @Test
+    fun `connection failure does not throw and does not clear`() {
+        server.shutdown()
+        sender().send("t", AdminToken("u4", "tok-4"), message)   // must not throw
         assertTrue(cleared.isEmpty())
     }
 }
