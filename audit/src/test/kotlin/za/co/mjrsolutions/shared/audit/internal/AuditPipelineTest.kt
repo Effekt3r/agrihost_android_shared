@@ -114,4 +114,25 @@ class AuditPipelineTest {
             .run(AuditKind.GET_FROM_SERVER, "x", true, null)
         assertEquals("Unknown", gw.entries[0].userName)
     }
+
+    @Test
+    fun `token factory failure is swallowed and sends nothing`() = runTest {
+        val gw = FakeGateway().apply { admins = listOf(AdminToken("a", "t1")) }
+        AuditPipeline(config, gw, { throw java.io.IOException("credentials boom") },
+            { _, admin, msg -> sent.add(admin to msg) }, { 7000L }, { block -> runBlocking { block() } })
+            .run(AuditKind.GET_FROM_SERVER, "x", true, null)
+        gw.commitAll()                          // must not throw
+        assertTrue(sent.isEmpty())
+    }
+
+    @Test
+    fun `one admin send failure does not stop the others`() = runTest {
+        val gw = FakeGateway().apply { admins = listOf(AdminToken("a", "t1"), AdminToken("b", "t2")) }
+        AuditPipeline(config, gw, { "tok" },
+            { _, admin, msg -> if (admin.userId == "a") throw RuntimeException("send boom") else sent.add(admin to msg) },
+            { 7000L }, { block -> runBlocking { block() } })
+            .run(AuditKind.GET_FROM_SERVER, "x", true, null)
+        gw.commitAll()
+        assertEquals(listOf("b"), sent.map { it.first.userId })
+    }
 }

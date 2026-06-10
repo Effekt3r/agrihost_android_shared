@@ -45,7 +45,11 @@ internal class AuditPipeline(
             val admins = gateway.queryAdminTokens()
             if (admins.isEmpty()) return
             val json = gateway.fetchServiceAccountJson() ?: return
-            val token = tokenFactory.token(json) ?: return
+            val token = tokenFactory.token(json)
+            if (token == null) {
+                Crash.record(Exception("FCM access token null"))   // legacy parity: recorded, not silent
+                return
+            }
             admins.forEach { admin ->
                 runCatching { sendFn(token, admin, message) }.onFailure { Crash.record(it) }
             }
