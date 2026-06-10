@@ -8,6 +8,7 @@ import za.co.mjrsolutions.shared.audit.AuditReportInfo
 /**
  * Pure construction of audit entries and messages. Paths and payload schema are the
  * frozen Firestore contract (spec §Firestore Contracts); wording follows vrugte.
+ * Callers must pass a userName already passed through [normaliseUserName].
  */
 internal class AuditEntryFactory(private val config: AuditConfig) {
 

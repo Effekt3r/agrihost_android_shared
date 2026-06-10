@@ -26,6 +26,7 @@ class AuditEntryFactoryTest {
         assertEquals("Jan Botha", e.payload["userName"])
         assertEquals("success", e.payload["status"])
         assertNull(e.payload["reportNumber"])   // get entries carry no report fields
+        assertEquals(com.google.firebase.firestore.FieldValue.serverTimestamp(), e.payload["timestamp"])
     }
 
     @Test
@@ -86,5 +87,23 @@ class AuditEntryFactoryTest {
         assertEquals("Unknown", AuditEntryFactory.normaliseUserName(null))
         assertEquals("Unknown", AuditEntryFactory.normaliseUserName("  "))
         assertEquals("Jan", AuditEntryFactory.normaliseUserName("Jan"))
+    }
+
+    @Test
+    fun `message firestore map is the frozen flutter contract`() {
+        val msg = factory.message(AuditKind.GET_FROM_SERVER, success = true, report = null,
+            userName = "Jan Botha", entryPath = "/p", millis = 5L)
+        assertEquals(
+            mapOf(
+                "id" to null,
+                "title" to "Received from Server",
+                "body" to "AGRIHOST_TEST_vrugte - Jan Botha received data",
+                "data" to "/p",
+                "timestamp" to 5L,
+                "sender" to "App",
+                "read" to false
+            ),
+            msg.toFirestoreMap()
+        )
     }
 }
