@@ -1,6 +1,7 @@
 package za.co.mjrsolutions.shared.bootstrap
 
 import android.app.Application
+import za.co.mjrsolutions.shared.audit.AgriAudit
 import za.co.mjrsolutions.shared.app_config.AgriAppConfig
 import za.co.mjrsolutions.shared.auth.AgriAuth
 import za.co.mjrsolutions.shared.language.AgriLang
@@ -13,7 +14,7 @@ import za.co.mjrsolutions.shared.permissions.AgriPermissions
  *   AgriInit.init(this, AgriConfig(...))
  *
  * Initialises permissions, auth (incl. encrypted store), language config, app-config
- * snapshot listener, and configures (but does NOT start) the location module. Location
+ * snapshot listener, the audit log, and configures (but does NOT start) the location module. Location
  * services begin only when an Activity invokes a gated AgriLocation entry point and
  * permission is granted.
  */
@@ -28,5 +29,6 @@ object AgriInit {
         AgriLang.init(config.language)
         AgriLang.initStores(app)
         AgriAppConfig.init(config.appConfig)
+        AgriAudit.init(app, config.audit)
     }
 }

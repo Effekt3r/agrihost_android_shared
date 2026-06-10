@@ -1,5 +1,6 @@
 package za.co.mjrsolutions.shared.bootstrap
 
+import za.co.mjrsolutions.shared.audit.AuditConfig
 import za.co.mjrsolutions.shared.app_config.AppConfigInit
 import za.co.mjrsolutions.shared.auth.AuthConfig
 import za.co.mjrsolutions.shared.language.LangConfig
@@ -14,5 +15,6 @@ data class AgriConfig(
     val location: LocationConfig,
     val auth: AuthConfig,
     val language: LangConfig,
-    val appConfig: AppConfigInit
+    val appConfig: AppConfigInit,
+    val audit: AuditConfig
 )

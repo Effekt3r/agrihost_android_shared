@@ -38,6 +38,7 @@ dependencies {
     implementation project(':language')
     implementation project(':app-config')
     implementation project(':fcm-inbox')
+    implementation project(':audit')
 
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.jetbrains.kotlin:kotlin-test:2.1.20'
