@@ -18,6 +18,9 @@ import za.co.mjrsolutions.shared.audit.internal.FirestoreGateway
  * entry, the staff `messages` doc, and pushes to admin users. Fire-and-forget; never
  * throws into the caller; an audit failure must never break a sync.
  *
+ * The only exception: [logSyncToServer]'s report is non-null by contract — Java callers
+ * must construct an [AuditReportInfo] (fields may be null) rather than pass null.
+ *
  * Init from Application.onCreate:
  *   AgriAudit.init(this, AuditConfig(BuildConfig.FLAVOR + "_vrugte", { userName() }))
  */
@@ -26,7 +29,7 @@ object AgriAudit {
     @Volatile private var pipeline: AuditPipeline? = null
     private val scope = CoroutineScope(
         SupervisorJob() + java.util.concurrent.Executors.newSingleThreadExecutor { r ->
-            Thread(r, "agri-audit")
+            Thread(r, "agri-audit").apply { isDaemon = true }
         }.asCoroutineDispatcher()
     )
 

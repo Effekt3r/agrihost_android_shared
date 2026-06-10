@@ -5,6 +5,7 @@ import androidx.test.core.app.ApplicationProvider
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import za.co.mjrsolutions.shared.audit.AuditConfig
 import za.co.mjrsolutions.shared.app_config.AppConfigInit
 import za.co.mjrsolutions.shared.auth.AuthConfig
 import za.co.mjrsolutions.shared.language.LangConfig
@@ -36,7 +37,8 @@ class AgriInitTest {
                     defaultLanguage = "en",
                     supportedLanguages = listOf(LanguageOption(displayName = "English", code = "en"))
                 ),
-                appConfig = AppConfigInit(product = "Test", bundleId = "test.pkg", currentVersion = "1.0.0")
+                appConfig = AppConfigInit(product = "Test", bundleId = "test.pkg", currentVersion = "1.0.0"),
+                audit = AuditConfig(clientId = "test_audit", userNameProvider = { null })
             ))
         }
         // After init, AgriPermissions sync checks must work without throwing.
