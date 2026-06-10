@@ -7,7 +7,7 @@ internal object Crash {
         try {
             com.google.firebase.crashlytics.FirebaseCrashlytics.getInstance().recordException(t)
         } catch (suppressed: Throwable) { // incl. NoClassDefFoundError off-app
-            Log.e("AgriAudit", "audit error (crashlytics unavailable)", t)
+            Log.e("AgriAudit", "audit error (crashlytics suppressed)", t)
         }
     }
 }

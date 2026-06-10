@@ -2,8 +2,8 @@ package za.co.mjrsolutions.shared.audit
 
 /**
  * Init-time configuration. [userNameProvider] is evaluated at log time (lazy), so init
- * order vs. the app's user store does not matter. Java callers: the lambda targets
- * kotlin Function0 — `() -> name` works directly.
+ * order vs. the app's user store does not matter. Java callers: `userNameProvider` is required (no default overload exists for it);
+ * a Java lambda `() -> name` satisfies the Kotlin `Function0<String?>` parameter directly.
  *
  * @param clientId frozen per app (spec decision #4): hael=FLAVOR, vrugte=FLAVOR+"_vrugte",
  *        Brand=FLAVOR, mr=FLAVOR+"_mr".
