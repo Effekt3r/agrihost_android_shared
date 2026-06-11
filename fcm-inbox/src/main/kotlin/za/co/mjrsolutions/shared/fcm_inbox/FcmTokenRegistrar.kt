@@ -2,6 +2,7 @@ package za.co.mjrsolutions.shared.fcm_inbox
 
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.installations.FirebaseInstallations
@@ -14,15 +15,32 @@ internal class FcmTokenRegistrar(private val context: Context) {
     private val db get() = FirebaseFirestore.getInstance()
 
     fun registerNow() {
-        val username = cfg.usernameProvider() ?: return
+        // Every bail/failure here is logged: device registration is fire-and-forget,
+        // so a silent return is indistinguishable from "uploaded fine" in the field.
+        // The provider may also throw (e.g. app singletons not initialised yet on a
+        // restored process) — registration must never crash the caller.
+        val username = try {
+            cfg.usernameProvider()
+        } catch (e: Exception) {
+            Log.e(TAG, "registerNow skipped: usernameProvider threw", e)
+            null
+        }
+        if (username == null) {
+            Log.w(TAG, "registerNow skipped: no username available (not logged in yet?)")
+            return
+        }
         val iidTask = FirebaseInstallations.getInstance().id
         val tokenTask = FirebaseMessaging.getInstance().token
-        Tasks.whenAll(iidTask, tokenTask).addOnSuccessListener {
-            // Both tasks completed by the time this fires, so .result returns
-            // immediately. Using Tasks.await() here would throw because the
-            // success listener runs on the main thread.
-            writeDoc(username, iidTask.result, tokenTask.result)
-        }
+        Tasks.whenAll(iidTask, tokenTask)
+            .addOnSuccessListener {
+                // Both tasks completed by the time this fires, so .result returns
+                // immediately. Using Tasks.await() here would throw because the
+                // success listener runs on the main thread.
+                writeDoc(username, iidTask.result, tokenTask.result)
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "registerNow failed: could not obtain installation id / FCM token", e)
+            }
     }
 
     fun update(newToken: String) {
@@ -76,8 +94,16 @@ internal class FcmTokenRegistrar(private val context: Context) {
             lastSeen = now
         )
         // Fire-and-forget: Firestore set() returns a Task; awaiting it on the
-        // main thread crashes. We don't need the result here.
+        // main thread crashes. Listeners only log the outcome.
         db.collection("users").document(username).collection("devices").document(installationId)
             .set(device, com.google.firebase.firestore.SetOptions.merge())
+            .addOnSuccessListener { Log.d(TAG, "device doc written for $username/$installationId") }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "device doc write FAILED for $username/$installationId (rules/offline?)", e)
+            }
+    }
+
+    private companion object {
+        const val TAG = "FcmInbox"
     }
 }
