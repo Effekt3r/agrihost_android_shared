@@ -45,8 +45,18 @@ object AgriAuth {
                 CrashlyticsKeys.setForUser(user, cfg, offlineLogin = false)
                 callback.onSuccess(user)
             },
-            onFailure = {
-                attemptOfflineLogin(username, password, callback)
+            onFailure = { statusCode, message ->
+                if (statusCode != null && statusCode < 500) {
+                    // The server reached a verdict on these credentials. Falling back
+                    // to the offline store here would let revoked or changed passwords
+                    // keep working offline indefinitely — and it masked the real error
+                    // ("Offline login failed" instead of invalid credentials).
+                    callback.onFailure(AuthError(AuthErrorType.INVALID_CREDENTIALS, message))
+                } else {
+                    // No HTTP verdict (no signal, DNS, timeout) or server outage (5xx):
+                    // the field-assessor case the offline store exists for.
+                    attemptOfflineLogin(username, password, callback)
+                }
             }
         )
     }

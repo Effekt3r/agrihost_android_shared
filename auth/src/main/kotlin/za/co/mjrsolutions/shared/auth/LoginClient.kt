@@ -25,10 +25,12 @@ internal object LoginClient {
         appVersion: String,
         deviceToken: String?,
         onSuccess: (LoginResponse) -> Unit,
-        onFailure: (String) -> Unit
+        /** statusCode is null when the request never produced an HTTP response
+         *  (no connectivity, DNS, timeout) — the only case offline fallback is for. */
+        onFailure: (statusCode: Int?, message: String) -> Unit
     ) {
         val q = queue ?: run {
-            onFailure("LoginClient not initialized")
+            onFailure(null, "LoginClient not initialized")
             return
         }
         val url = "${baseUrl.trimEnd('/')}/login"
@@ -43,18 +45,30 @@ internal object LoginClient {
                     if (parsed?.apiToken != null) {
                         onSuccess(parsed)
                     } else {
-                        onFailure(parsed?.message ?: "Login failed — no token in response")
+                        onFailure(200, parsed?.message ?: "Login failed — no token in response")
                     }
                 } catch (e: Exception) {
-                    onFailure("Failed to parse login response: ${e.message}")
+                    onFailure(200, "Failed to parse login response: ${e.message}")
                 }
             },
             { error ->
+                val status = error.networkResponse?.statusCode
+                // Prefer the server's own message body (e.g. invalid credentials)
+                // over a bare status code.
+                val serverMsg = error.networkResponse?.data?.let {
+                    try {
+                        Gson().fromJson(String(it, Charsets.UTF_8), LoginResponse::class.java)?.message
+                    } catch (_: Exception) {
+                        null
+                    }
+                }
                 val msg = when {
-                    error.networkResponse != null -> "Server error ${error.networkResponse.statusCode}"
+                    !serverMsg.isNullOrBlank() -> serverMsg
+                    status == 401 || status == 403 -> "Invalid username or password"
+                    status != null -> "Server error $status"
                     else -> error.message ?: "Network error"
                 }
-                onFailure(msg)
+                onFailure(status, msg)
             }
         ) {
             override fun getBodyContentType(): String = "application/json; charset=utf-8"
