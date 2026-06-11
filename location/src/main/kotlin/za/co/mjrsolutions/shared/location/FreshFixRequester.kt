@@ -10,7 +10,10 @@ import com.google.android.gms.location.LocationResult
 internal class FreshFixRequester(
     private val context: Context,
     private val config: LocationConfig,
-    private val callback: FixCallback
+    private val callback: FixCallback,
+    /** Invoked on the main looper for every fix received while waiting — lets a
+     *  progress UI show the live accuracy as the fix converges. */
+    private val onInterim: ((AgriFix) -> Unit)? = null
 ) {
 
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -25,6 +28,7 @@ internal class FreshFixRequester(
                 if (bestSoFar == null || isBetter(fix, bestSoFar!!)) {
                     bestSoFar = fix
                 }
+                onInterim?.invoke(fix)
                 if (fix.isFresh && fix.isAccurate) {
                     complete { callback.onFix(fix) }
                     return

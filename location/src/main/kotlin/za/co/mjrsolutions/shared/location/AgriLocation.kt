@@ -109,7 +109,8 @@ object AgriLocation {
                 callback.onLocationDisabled()
             }
         }
-        FreshFixRequester(activity.applicationContext, config, wrapped).start()
+        FreshFixRequester(activity.applicationContext, config, wrapped,
+            onInterim = { fix -> dialog.updateAccuracy(fix.accuracyMeters) }).start()
     }
 
     @JvmStatic
@@ -132,7 +133,8 @@ object AgriLocation {
                 override fun onPermissionDenied() { dialog.dismiss(); callback.onPermissionDenied() }
                 override fun onLocationDisabled() { dialog.dismiss(); callback.onLocationDisabled() }
             }
-            FreshFixRequester(appCtx, config, wrapped).start()
+            FreshFixRequester(appCtx, config, wrapped,
+                onInterim = { fix -> dialog.updateAccuracy(fix.accuracyMeters) }).start()
         }
 
         if (AgriPermissions.isGranted(activity, PermissionType.LOCATION_FINE)) {
