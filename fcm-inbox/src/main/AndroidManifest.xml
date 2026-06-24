@@ -8,10 +8,10 @@
         <activity
             android:name=".ui.InboxActivity"
             android:exported="false"
-            android:theme="@style/Theme.AppCompat.DayNight" />
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar" />
         <activity
             android:name=".ui.MessageDetailActivity"
             android:exported="false"
-            android:theme="@style/Theme.AppCompat.DayNight" />
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar" />
     </application>
 </manifest>
