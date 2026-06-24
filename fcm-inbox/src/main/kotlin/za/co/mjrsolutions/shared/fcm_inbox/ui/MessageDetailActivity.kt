@@ -145,9 +145,12 @@ class MessageDetailActivity : AppCompatActivity() {
 
     private fun markRead(id: String) {
         val u = FcmInbox.config.usernameProvider() ?: return
+        // Persist the username as a field (the doc id is the username too): InboxActivity's
+        // read-state query filters the "reads" collection group by this field, which a
+        // collection-group documentId() filter cannot do.
         FirebaseFirestore.getInstance().collection("messages").document(id)
             .collection("reads").document(u)
-            .set(mapOf("readAt" to System.currentTimeMillis()))
+            .set(mapOf("readAt" to System.currentTimeMillis(), "username" to u))
     }
 
     companion object {

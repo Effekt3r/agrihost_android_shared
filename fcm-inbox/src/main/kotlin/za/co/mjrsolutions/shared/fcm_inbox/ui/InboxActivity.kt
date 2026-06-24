@@ -9,7 +9,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
@@ -79,8 +78,14 @@ class InboxActivity : AppCompatActivity() {
     }
 
     private fun loadReadIds(username: String) {
+        // Read receipts live at messages/{id}/reads/{username}. A collection-group query
+        // CANNOT filter by FieldPath.documentId() == username: documentId() matches the FULL
+        // document path, so a bare username (1 segment) throws IllegalArgumentException
+        // synchronously and takes down the inbox. Filter the username stored as a field
+        // instead, and treat read-state as best-effort so a missing collection-group index
+        // (which fails asynchronously) can never crash the inbox either.
         FirebaseFirestore.getInstance().collectionGroup("reads")
-            .whereEqualTo(FieldPath.documentId(), username)
+            .whereEqualTo("username", username)
             .get()
             .addOnSuccessListener { qs ->
                 readIds.clear()
@@ -88,6 +93,7 @@ class InboxActivity : AppCompatActivity() {
                     d.reference.parent.parent?.id?.let(readIds::add)
                 }
             }
+            .addOnFailureListener { /* best-effort: leave readIds empty, never crash */ }
     }
 
     private fun showEmpty(text: String) {
