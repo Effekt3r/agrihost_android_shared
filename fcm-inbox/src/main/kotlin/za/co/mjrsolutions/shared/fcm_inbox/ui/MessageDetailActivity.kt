@@ -39,7 +39,7 @@ class MessageDetailActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_message_detail)
+        setContentView(R.layout.fcminbox_activity_message_detail)
         setSupportActionBar(findViewById<Toolbar>(R.id.toolbar))
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 

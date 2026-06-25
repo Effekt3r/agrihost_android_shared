@@ -28,7 +28,7 @@ class InboxActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_inbox)
+        setContentView(R.layout.fcminbox_activity_inbox)
         setSupportActionBar(findViewById<Toolbar>(R.id.toolbar))
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
