@@ -60,6 +60,19 @@ object AgriAudit {
     fun logSyncToServer(payload: String?, success: Boolean, report: AuditReportInfo) =
         log(AuditKind.SYNC_TO_SERVER, payload, success, report)
 
+    /** SyncFailure: call from sync error handlers (actionable failures only). Writes the
+     *  failure entry to SyncFailures/...; no messages doc / no admin push. */
+    @JvmStatic
+    fun logSyncFailure(requestBody: String?, httpStatus: Int, endpoint: String?,
+                       reason: String?, serverMessage: String?, report: AuditReportInfo) {
+        val p = pipeline ?: return
+        scope.launch {
+            runCatching {
+                p.runFailure(requestBody, httpStatus, endpoint, reason, serverMessage, report)
+            }.onFailure { Crash.record(it) }
+        }
+    }
+
     private fun log(kind: AuditKind, payload: String?, success: Boolean, report: AuditReportInfo?) {
         val p = pipeline ?: return   // pre-init call: deliberate silent no-op
         scope.launch {

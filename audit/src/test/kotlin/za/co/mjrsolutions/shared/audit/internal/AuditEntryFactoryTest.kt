@@ -106,4 +106,31 @@ class AuditEntryFactoryTest {
             msg.toFirestoreMap()
         )
     }
+
+    @Test
+    fun `failureEntry has failure path and fields`() {
+        val e = factory.failureEntry(
+            requestBody = "{\"a\":1}", httpStatus = 500, endpoint = "/harvest",
+            reason = "server error", serverMessage = "Unknown column km_polaris",
+            report = AuditReportInfo("40068", "5739", null), userName = "Jan Botha", millis = 123L
+        )
+        assertEquals("SyncFailures", e.collection)
+        assertEquals("40068", e.segment)
+        assertEquals("/SyncFailures/AGRIHOST_TEST_vrugte/Jan Botha/40068/entries/123", e.path)
+        assertEquals("failure", e.payload["status"])
+        assertEquals(500, e.payload["httpStatus"])
+        assertEquals("/harvest", e.payload["endpoint"])
+        assertEquals("server error", e.payload["reason"])
+        assertEquals("Unknown column km_polaris", e.payload["serverMessage"])
+        assertEquals("40068", e.payload["reportNumber"])
+        assertEquals("5739", e.payload["reportServerId"])
+    }
+
+    @Test
+    fun `failureEntry blank reportNumber falls back to Unknown segment`() {
+        val e = factory.failureEntry("b", -1, "/x", "r", "s",
+            AuditReportInfo(null, null, null), "Jan Botha", 1L)
+        assertEquals("Unknown", e.segment)
+        assertEquals(-1, e.payload["httpStatus"])
+    }
 }

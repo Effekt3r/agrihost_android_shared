@@ -18,6 +18,7 @@ internal class AuditEntryFactory(private val config: AuditConfig) {
         val segment = when (kind) {
             AuditKind.GET_FROM_SERVER -> status
             AuditKind.SYNC_TO_SERVER -> reportSegment(report)
+            AuditKind.SYNC_FAILURE -> reportSegment(report)   // failures use failureEntry(); never hit here
         }
         val map = mutableMapOf<String, Any?>(
             "request" to (payload ?: ""),
@@ -38,6 +39,26 @@ internal class AuditEntryFactory(private val config: AuditConfig) {
             millis.toString(), map)
     }
 
+    fun failureEntry(requestBody: String?, httpStatus: Int, endpoint: String?,
+                     reason: String?, serverMessage: String?, report: AuditReportInfo?,
+                     userName: String, millis: Long): AuditEntry {
+        val map = mutableMapOf<String, Any?>(
+            "request" to (requestBody ?: ""),
+            "timestamp" to FieldValue.serverTimestamp(),
+            "client" to config.clientId,
+            "userName" to userName,
+            "status" to "failure",
+            "httpStatus" to httpStatus,
+            "endpoint" to (endpoint ?: ""),
+            "reason" to (reason ?: ""),
+            "serverMessage" to (serverMessage ?: ""),
+            "reportNumber" to (report?.reportNumber ?: ""),
+            "reportServerId" to (report?.reportServerId ?: "")
+        )
+        return AuditEntry(AuditKind.SYNC_FAILURE.collectionName, config.clientId, userName,
+            reportSegment(report), millis.toString(), map)
+    }
+
     fun message(kind: AuditKind, success: Boolean, report: AuditReportInfo?,
                 userName: String, entryPath: String, millis: Long): AuditMessage {
         val prefix = "${config.clientId} - $userName"
@@ -50,6 +71,7 @@ internal class AuditEntryFactory(private val config: AuditConfig) {
                 "Synced to Server" to
                     if (success) "$prefix synced report$detail" else "$prefix failed to sync report$detail"
             }
+            AuditKind.SYNC_FAILURE -> "Sync failure" to "$prefix sync failure"   // runFailure writes no message; never hit
         }
         return AuditMessage(title, body, entryPath, millis, config.sender)
     }

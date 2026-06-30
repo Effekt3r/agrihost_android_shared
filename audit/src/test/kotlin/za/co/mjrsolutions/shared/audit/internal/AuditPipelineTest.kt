@@ -135,4 +135,18 @@ class AuditPipelineTest {
         gw.commitAll()
         assertEquals(listOf("b"), sent.map { it.first.userId })
     }
+
+    @Test
+    fun `runFailure writes failure entry and no message`() = runTest {
+        val gw = FakeGateway().apply { admins = listOf(AdminToken("a", "t1")) }
+        pipeline(gw).runFailure("{\"a\":1}", 500, "/harvest", "server error", "boom",
+            AuditReportInfo("40068", null, null))
+        assertEquals(1, gw.entries.size)
+        assertEquals("SyncFailures", gw.entries[0].collection)
+        assertEquals("failure", gw.entries[0].payload["status"])
+        assertEquals(500, gw.entries[0].payload["httpStatus"])
+        assertEquals(0, gw.messages.size)
+        gw.commitAll()
+        assertTrue(sent.isEmpty())
+    }
 }

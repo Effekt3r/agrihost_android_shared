@@ -40,6 +40,19 @@ internal class AuditPipeline(
         }.onFailure { Crash.record(it) }
     }
 
+    /** Sync failure: writes ONLY the failure entry. No messages doc and no admin push
+     *  (failures surface in the console Sync Failures tab, not as per-failure pushes). */
+    fun runFailure(requestBody: String?, httpStatus: Int, endpoint: String?,
+                   reason: String?, serverMessage: String?, report: AuditReportInfo?) {
+        val userName = AuditEntryFactory.normaliseUserName(
+            runCatching { config.userNameProvider() }.getOrNull()
+        )
+        val entry = factory.failureEntry(
+            requestBody, httpStatus, endpoint, reason, serverMessage, report, userName, clock()
+        )
+        runCatching { gateway.writeAuditEntry(entry) }.onFailure { Crash.record(it) }
+    }
+
     private suspend fun notifyAdmins(message: AuditMessage) {
         runCatching {
             val admins = gateway.queryAdminTokens()
