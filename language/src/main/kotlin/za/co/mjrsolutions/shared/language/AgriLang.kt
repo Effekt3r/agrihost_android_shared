@@ -44,6 +44,22 @@ object AgriLang {
     @JvmStatic
     fun getString(key: String): String = Dictionary.get(key) ?: key
 
+    /**
+     * Reverse lookup: the [LangKey.key] of the first key whose translation equals [value],
+     * ignoring case, or null when nothing matches. Never throws: what to do on a miss (log
+     * a non-fatal, fall back to the value, ...) is the caller's decision, not a crash in the
+     * translation layer. While the dictionary is not loaded [getString] returns the key
+     * itself, so a raw key name resolves to itself.
+     */
+    @JvmStatic
+    fun keyForValue(keys: Array<out LangKey>, value: String?): String? {
+        if (value == null) return null
+        for (key in keys) {
+            if (getString(key).equals(value, ignoreCase = true)) return key.key()
+        }
+        return null
+    }
+
     @JvmStatic
     fun setViewsText(view: View) = ViewTextWalker.setViewsText(view)
 
