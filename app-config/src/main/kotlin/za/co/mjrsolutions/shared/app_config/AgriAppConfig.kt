@@ -69,6 +69,85 @@ object AgriAppConfig {
     @JvmStatic
     fun getExtras(): Map<String, Any?> = latestSnapshot?.extras ?: emptyMap()
 
+    // ---- Global document: services/AppConfig ---------------------------------------------
+    //
+    // One document for every product and flavor, written only by the management console
+    // (Firestore rule: services/AppConfig write = admin). Holds global toggles such as
+    // calculateButtonAlwaysVisible and per-flavor maps such as smtpByFlavor. Opt-in via
+    // initGlobal() so apps that never call it keep exactly one Firestore listener.
+
+    const val GLOBAL_COLLECTION = "services"
+    const val GLOBAL_DOCUMENT = "AppConfig"
+
+    @Volatile private var globalListener: ListenerRegistration? = null
+    @Volatile private var globalCallbackRef: GlobalConfigCallback? = null
+    @Volatile private var latestGlobal: GlobalConfigSnapshot? = null
+
+    /**
+     * Starts listening to the global document. Idempotent. Never throws: a missing
+     * Firebase app is recorded as a non-fatal and the app runs on its defaults, which is
+     * exactly what an absent document produces.
+     */
+    @JvmStatic
+    @Synchronized
+    fun initGlobal() {
+        if (globalListener != null) return
+        try {
+            val ref = FirebaseFirestore.getInstance()
+                .collection(GLOBAL_COLLECTION)
+                .document(GLOBAL_DOCUMENT)
+            globalListener = ref.addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    recordNonFatal(e)
+                    return@addSnapshotListener
+                }
+                if (snapshot == null) return@addSnapshotListener
+                onGlobalDocument(if (snapshot.exists()) snapshot.data else null)
+            }
+        } catch (t: Throwable) {
+            recordNonFatal(t)
+        }
+    }
+
+    @JvmStatic
+    @Synchronized
+    fun stopGlobal() {
+        globalListener?.remove()
+        globalListener = null
+    }
+
+    /** Delivers the latest global snapshot immediately when one exists, then every update. */
+    @JvmStatic
+    fun setGlobalCallback(callback: GlobalConfigCallback?) {
+        globalCallbackRef = callback
+        val s = latestGlobal
+        if (s != null && callback != null) {
+            callback.onGlobalConfigChanged(s)
+        }
+    }
+
+    @JvmStatic
+    fun getGlobalSnapshot(): GlobalConfigSnapshot? = latestGlobal
+
+    /**
+     * The listener's single entry point, also the unit-test seam. A missing document (null)
+     * becomes an empty snapshot so consumers fall back to their defaults instead of keeping
+     * stale values.
+     */
+    internal fun onGlobalDocument(data: Map<String, Any?>?) {
+        val snap = if (data.isNullOrEmpty()) GlobalConfigSnapshot.EMPTY else GlobalConfigSnapshot(data)
+        latestGlobal = snap
+        globalCallbackRef?.onGlobalConfigChanged(snap)
+    }
+
+    private fun recordNonFatal(t: Throwable) {
+        try {
+            FirebaseCrashlytics.getInstance().recordException(t)
+        } catch (_: Throwable) {
+            // Crashlytics itself unavailable (e.g. unit test, or Firebase not initialised).
+        }
+    }
+
     private fun startListening() {
         val cfg = init
         val db = FirebaseFirestore.getInstance()
