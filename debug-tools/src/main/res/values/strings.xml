@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  DEBUG-ONLY strings, deliberately NOT routed through AgriLang: they never reach an assessor,
+  only whoever is testing a debug build, and adding developer-tool keys to every app's
+  dictionaries would force a LANGUAGE_VERSION bump for text no user will ever see.
+  Prefixed agridebug_ so they cannot shadow a consumer's own resources.
+-->
+<resources>
+    <string name="agridebug_shortcut_clear_short">Clear app data</string>
+    <string name="agridebug_shortcut_clear_long">Wipe database, preferences and cache</string>
+
+    <string name="agridebug_clear_dialog_title">Clear app data?</string>
+    <string name="agridebug_clear_dialog_message">This wipes everything: the database, all preferences, the signed-in user and tokens, and all caches. Any assessment that has not been sent to the server yet will be lost permanently. The app will close.</string>
+    <string name="agridebug_clear_dialog_confirm">Clear everything</string>
+    <string name="agridebug_clear_dialog_cancel">Cancel</string>
+
+    <string name="agridebug_clear_failed">Could not clear app data. Use Settings, Storage, Clear storage instead.</string>
+</resources>

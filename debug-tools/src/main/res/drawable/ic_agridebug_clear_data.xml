@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  DEBUG-ONLY shortcut icon: a bin glyph for the launcher long-press menu.
+
+  Do NOT add android:tint here. The launcher draws shortcut icons straight onto its own
+  sheet, which is white in light mode, so a white tint renders the glyph invisible rather
+  than absent - the shortcut still lists with a blank square. Red both stays legible on the
+  light and dark sheets and reads as destructive.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFD32F2F"
+        android:pathData="M6,19c0,1.1 0.9,2 2,2h8c1.1,0 2,-0.9 2,-2V7H6v12zM19,4h-3.5l-1,-1h-5l-1,1H5v2h14V4z" />
+</vector>

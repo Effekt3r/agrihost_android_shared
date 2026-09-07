@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  DEBUG-ONLY tooling. Consume with `debugImplementation` so nothing here can exist in a
+  release APK: the shortcut wipes the local database, and because the server allocates
+  reports to a device on download, an assessment that has not been synced yet cannot be
+  recovered once it is gone. A runtime BuildConfig.DEBUG guard would still ship the code
+  and the shortcut entry to assessors, one mis-tap away from a long-press on the icon.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+
+        <!--
+          Target of the launcher long-press shortcut. Translucent so the confirm dialog
+          floats over whatever is behind it; noHistory + excludeFromRecents so a cancelled
+          wipe leaves nothing in the back stack or recents.
+        -->
+        <activity
+            android:name=".ClearAppDataActivity"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <!--
+          Registers the dynamic shortcut at process start without any call from the app. A
+          ContentProvider is instantiated by the framework before any activity, which is the
+          standard no-wiring startup hook (the same trick androidx.startup uses). The
+          authority carries the consuming app's applicationId so every flavor installed side
+          by side gets its own, as authorities must be unique device-wide.
+        -->
+        <provider
+            android:name=".DebugShortcutInstaller"
+            android:authorities="${applicationId}.debugshortcuts"
+            android:exported="false"
+            android:initOrder="100" />
+    </application>
+</manifest>
