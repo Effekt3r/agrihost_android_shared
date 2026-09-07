@@ -39,7 +39,7 @@ class TransportInterceptorTest {
             .addInterceptor(TransportInterceptor(Transport.FUNCTIONS_GATEWAY, functionsBase))
             .build()
             // original target host is irrelevant — it must be rewritten to the functions host
-            .newCall(Request.Builder().url("https://demo.agrihost.co.za/api/damage-reports").build())
+            .newCall(Request.Builder().url("https://dev.agrihost.co.za/api/damage-reports").build())
             .execute().close()
 
         val recorded = server.takeRequest()
