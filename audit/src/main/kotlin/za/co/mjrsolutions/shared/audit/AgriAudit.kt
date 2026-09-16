@@ -50,10 +50,13 @@ object AgriAudit {
         )
     }
 
-    /** GetFromServer: call from get-reports response handlers (success and failure). */
+    /** GetFromServer: call from get-reports response handlers (success and failure).
+     *  [endpoint] is the request URL — surfaced in the console so a response can be tied
+     *  to the API call it came from. Older 2-arg callers keep working (endpoint = null). */
+    @JvmOverloads
     @JvmStatic
-    fun logGetFromServer(payload: String?, success: Boolean) =
-        log(AuditKind.GET_FROM_SERVER, payload, success, null)
+    fun logGetFromServer(payload: String?, success: Boolean, endpoint: String? = null) =
+        log(AuditKind.GET_FROM_SERVER, payload, success, null, endpoint)
 
     /** SyncToServer: call from save-report response handlers (success and failure). */
     @JvmStatic
@@ -73,10 +76,11 @@ object AgriAudit {
         }
     }
 
-    private fun log(kind: AuditKind, payload: String?, success: Boolean, report: AuditReportInfo?) {
+    private fun log(kind: AuditKind, payload: String?, success: Boolean, report: AuditReportInfo?,
+                    endpoint: String? = null) {
         val p = pipeline ?: return   // pre-init call: deliberate silent no-op
         scope.launch {
-            runCatching { p.run(kind, payload, success, report) }.onFailure { Crash.record(it) }
+            runCatching { p.run(kind, payload, success, report, endpoint) }.onFailure { Crash.record(it) }
         }
     }
 

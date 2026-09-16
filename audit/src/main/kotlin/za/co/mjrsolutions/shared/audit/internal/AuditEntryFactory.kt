@@ -13,7 +13,7 @@ import za.co.mjrsolutions.shared.audit.AuditReportInfo
 internal class AuditEntryFactory(private val config: AuditConfig) {
 
     fun entry(kind: AuditKind, payload: String?, success: Boolean, report: AuditReportInfo?,
-              userName: String, millis: Long): AuditEntry {
+              userName: String, millis: Long, endpoint: String? = null): AuditEntry {
         val status = if (success) "success" else "failure"
         val segment = when (kind) {
             AuditKind.GET_FROM_SERVER -> status
@@ -27,6 +27,9 @@ internal class AuditEntryFactory(private val config: AuditConfig) {
             "userName" to userName,
             "status" to status
         )
+        if (kind == AuditKind.GET_FROM_SERVER) {
+            map["endpoint"] = endpoint ?: ""
+        }
         if (kind == AuditKind.SYNC_TO_SERVER) {
             map["reportNumber"] = report?.reportNumber ?: ""
             map["reportServerId"] = report?.reportServerId ?: ""

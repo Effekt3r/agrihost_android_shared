@@ -71,6 +71,13 @@ class AuditPipelineTest {
     }
 
     @Test
+    fun `getFromServer entry carries the endpoint through the pipeline`() = runTest {
+        val gw = FakeGateway()
+        pipeline(gw).run(AuditKind.GET_FROM_SERVER, "resp", true, null, "https://x/api/reports/4")
+        assertEquals("https://x/api/reports/4", gw.entries[0].payload["endpoint"])
+    }
+
+    @Test
     fun `entry write failure still writes message and notifies on commit`() = runTest {
         val gw = FakeGateway().apply { failEntryWrite = true; admins = listOf(AdminToken("a", "t1")) }
         pipeline(gw).run(AuditKind.SYNC_TO_SERVER, "req", false,

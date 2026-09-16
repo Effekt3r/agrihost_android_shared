@@ -24,12 +24,13 @@ internal class AuditPipeline(
 ) {
     private val factory = AuditEntryFactory(config)
 
-    fun run(kind: AuditKind, payload: String?, success: Boolean, report: AuditReportInfo?) {
+    fun run(kind: AuditKind, payload: String?, success: Boolean, report: AuditReportInfo?,
+            endpoint: String? = null) {
         val userName = AuditEntryFactory.normaliseUserName(
             runCatching { config.userNameProvider() }.getOrNull()
         )
         val millis = clock()
-        val entry = factory.entry(kind, payload, success, report, userName, millis)
+        val entry = factory.entry(kind, payload, success, report, userName, millis, endpoint)
         val message = factory.message(kind, success, report, userName, entry.path, millis)
 
         runCatching { gateway.writeAuditEntry(entry) }.onFailure { Crash.record(it) }

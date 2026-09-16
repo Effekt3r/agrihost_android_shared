@@ -26,7 +26,15 @@ class AuditEntryFactoryTest {
         assertEquals("Jan Botha", e.payload["userName"])
         assertEquals("success", e.payload["status"])
         assertNull(e.payload["reportNumber"])   // get entries carry no report fields
+        assertEquals("", e.payload["endpoint"]) // endpoint defaults to "" when not provided
         assertEquals(com.google.firebase.firestore.FieldValue.serverTimestamp(), e.payload["timestamp"])
+    }
+
+    @Test
+    fun `getFromServer entry records the endpoint when provided`() {
+        val e = factory.entry(AuditKind.GET_FROM_SERVER, "body", success = true, report = null,
+            userName = "Jan Botha", millis = 1000L, endpoint = "https://x.co.za/api/reports/2")
+        assertEquals("https://x.co.za/api/reports/2", e.payload["endpoint"])
     }
 
     @Test
@@ -50,6 +58,7 @@ class AuditEntryFactoryTest {
         assertEquals(listOf("L1"), e.payload["landIds"])
         assertEquals(listOf("Kamp 3"), e.payload["landNames"])
         assertEquals(listOf("LC7"), e.payload["landClaimIds"])
+        assertNull(e.payload["endpoint"])   // endpoint is a GetFromServer-only field
     }
 
     @Test
