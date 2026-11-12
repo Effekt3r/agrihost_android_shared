@@ -27,6 +27,10 @@ import za.co.mjrsolutions.shared.audit.internal.FirestoreGateway
 object AgriAudit {
 
     @Volatile private var pipeline: AuditPipeline? = null
+
+    /** The config given to [init]; read by AgriUserRecord and CalculationAudit. */
+    @Volatile internal var config: AuditConfig? = null
+        private set
     private val scope = CoroutineScope(
         SupervisorJob() + java.util.concurrent.Executors.newSingleThreadExecutor { r ->
             Thread(r, "agri-audit").apply { isDaemon = true }
@@ -35,6 +39,7 @@ object AgriAudit {
 
     @JvmStatic
     fun init(app: Application, config: AuditConfig) {
+        this.config = config
         val gateway: FirestoreGateway = FirebaseFirestoreGateway()
         val sender = FcmSender(onStaleToken = { userId ->
             gateway.clearStaleToken(userId, config.bundleId, config.staleBundleTokenField)
@@ -76,6 +81,31 @@ object AgriAudit {
         }
     }
 
+    /** A photo's copy is in Storage: its "photo" entry on the report's console timeline. */
+    @JvmStatic
+    fun logPhoto(entry: PhotoLogEntry) = console { p ->
+        p.runConsole { f, user, login, ms -> f.photo(entry, user, login, ms) }
+    }
+
+    /** A photo upload to the server finished: a "photo_upload" entry with the server's answer. */
+    @JvmStatic
+    fun logPhotoUpload(entry: PhotoUploadLogEntry) = console { p ->
+        p.runConsole { f, user, login, _ -> f.photoUpload(entry, user, login, p.nextId().toString()) }
+    }
+
+    /** A PDF's copy is in Storage: its "pdf" entry, rewritten when a changed PDF is copied again. */
+    @JvmStatic
+    fun logPdf(entry: PdfLogEntry) = console { p ->
+        p.runConsole { f, user, login, ms -> f.pdf(entry, user, login, ms) }
+    }
+
+    /** Built and written on the caller's thread (the Firestore write itself is asynchronous), so a
+     *  caller that reuses its entry object afterwards cannot change what was logged. */
+    private fun console(block: (AuditPipeline) -> Unit) {
+        val p = pipeline ?: return   // pre-init call: deliberate silent no-op
+        runCatching { block(p) }.onFailure { Crash.record(it) }
+    }
+
     private fun log(kind: AuditKind, payload: String?, success: Boolean, report: AuditReportInfo?,
                     endpoint: String? = null) {
         val p = pipeline ?: return   // pre-init call: deliberate silent no-op
@@ -85,5 +115,5 @@ object AgriAudit {
     }
 
     @VisibleForTesting
-    internal fun resetForTest() { pipeline = null }
+    internal fun resetForTest() { pipeline = null; config = null }
 }

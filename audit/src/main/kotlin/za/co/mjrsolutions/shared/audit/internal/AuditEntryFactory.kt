@@ -3,6 +3,7 @@ package za.co.mjrsolutions.shared.audit.internal
 import com.google.firebase.firestore.FieldValue
 import za.co.mjrsolutions.shared.audit.AuditConfig
 import za.co.mjrsolutions.shared.audit.AuditKind
+import za.co.mjrsolutions.shared.audit.AuditPayloads
 import za.co.mjrsolutions.shared.audit.AuditReportInfo
 
 /**
@@ -21,7 +22,7 @@ internal class AuditEntryFactory(private val config: AuditConfig) {
             AuditKind.SYNC_FAILURE -> reportSegment(report)   // failures use failureEntry(); never hit here
         }
         val map = mutableMapOf<String, Any?>(
-            "request" to (payload ?: ""),
+            "request" to (AuditPayloads.forLog(payload) ?: ""),
             "timestamp" to FieldValue.serverTimestamp(),
             "client" to config.clientId,
             "userName" to userName,
@@ -46,7 +47,7 @@ internal class AuditEntryFactory(private val config: AuditConfig) {
                      reason: String?, serverMessage: String?, report: AuditReportInfo?,
                      userName: String, millis: Long): AuditEntry {
         val map = mutableMapOf<String, Any?>(
-            "request" to (requestBody ?: ""),
+            "request" to (AuditPayloads.forLog(requestBody) ?: ""),
             "timestamp" to FieldValue.serverTimestamp(),
             "client" to config.clientId,
             "userName" to userName,

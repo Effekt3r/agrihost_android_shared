@@ -23,6 +23,31 @@ internal class AuditPipeline(
     private val notifyLauncher: (suspend () -> Unit) -> Unit
 ) {
     private val factory = AuditEntryFactory(config)
+    private val consoleFactory = ConsoleEntryFactory(config)
+    private val lastId = java.util.concurrent.atomic.AtomicLong()
+
+    /**
+     * A photo, photo-upload or PDF entry: built by [build] with the full name (console folder),
+     * the login id and the clock, then written. No messages doc and no admin push.
+     */
+    fun runConsole(build: (factory: ConsoleEntryFactory, userName: String, loginId: String, millis: Long) -> AuditEntry) {
+        val userName = AuditEntryFactory.normaliseUserName(
+            runCatching { config.userNameProvider() }.getOrNull()
+        )
+        val loginId = runCatching { config.loginIdProvider() }.getOrNull() ?: ""
+        val entry = build(consoleFactory, userName, loginId, clock())
+        runCatching { gateway.writeAuditEntry(entry) }.onFailure { Crash.record(it) }
+    }
+
+    /** Device time in ms, like the send entries' ids, but never the same id twice. */
+    fun nextId(): Long {
+        val now = clock()
+        while (true) {
+            val last = lastId.get()
+            val next = maxOf(now, last + 1)
+            if (lastId.compareAndSet(last, next)) return next
+        }
+    }
 
     fun run(kind: AuditKind, payload: String?, success: Boolean, report: AuditReportInfo?,
             endpoint: String? = null) {
