@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Camera photos go into the gallery (Pictures) through MediaStore: no permission from
+         Android 10 up; Android 7-9 need write access to put them there. Never all-files access. -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <application>
+        <!-- Copies photos and PDFs to Storage once the tablet is on unmetered Wi-Fi. -->
+        <service
+            android:name="za.co.mjrsolutions.shared.files.internal.BackupJobService"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+    </application>
+
+</manifest>

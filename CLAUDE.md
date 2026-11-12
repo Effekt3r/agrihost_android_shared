@@ -36,6 +36,20 @@ library is pulled via a public GitHub clone.
 - Rules and wiring are tested in `app-config/src/test` (Robolectric + Play's `FakeAppUpdateManager`).
   Play's real update screen can only be seen from a Play install (internal app sharing).
 
+## Console logging and file copies (`:audit` 1.3.0, `:files` 1.0.0, 2026-11-12)
+
+Franco: the apps are uniform and hael is the reference, so hael's logging and storage code lives
+here and hael, mr and vrugte all call it.
+- `:audit` writes every console entry: receive/send/sync-failure (`logGetFromServer`,
+  `logSyncToServer`, `logSyncFailure`), photo/photo-upload/PDF entries (`logPhoto`,
+  `logPhotoUpload`, `logPdf`), the login record (`AgriUserRecord`) and calculation traces
+  (`CalculationAudit`). The console user folder is the assessor's FULL NAME (`userNameProvider`);
+  `loginIdProvider`, `appVersion` and `applicationId` fill the rest. Logged bodies lose base64
+  photos (`AuditPayloads.forLog`) so no entry is lost to Firestore's 1 MiB.
+- `:files` holds photo capture (gallery Pictures), PDF location (app Documents), the Wi-Fi copy
+  job and DB exports - see files/README.md. Storage rules live in `agrihost_hael_android/storage.rules`
+  (deployed 2026-11-12: `{mr,vrugte}_photos`, `{hael,mr,vrugte}_pdfs`; PDFs admin-read only).
+
 ---
 *This CLAUDE.md is a starting point — expand it with module layout, the composite-build
 wiring, and publishing notes as you work in the repo.*
