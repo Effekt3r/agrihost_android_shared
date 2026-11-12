@@ -10,7 +10,8 @@ import androidx.appcompat.app.AlertDialog
 object AppUpdateUi {
 
     /**
-     * Show an update dialog. The positive button opens Play Store for [packageName].
+     * Show an update dialog. The positive button runs [onUpdate] when given (AppUpdateBanner's
+     * startUpdate: Play's update screen inside the app), else opens Play Store for [packageName].
      * If [laterButtonText] is non-null, a dismissible "Later" button is shown.
      * Pass null to make the dialog non-cancellable (force update).
      */
@@ -23,7 +24,8 @@ object AppUpdateUi {
         updateButtonText: String,
         laterButtonText: String? = null,
         packageName: String = activity.packageName,
-        onLater: Runnable? = null
+        onLater: Runnable? = null,
+        onUpdate: Runnable? = null
     ) {
         if (activity.isFinishing || activity.isDestroyed) return
         val builder = AlertDialog.Builder(activity)
@@ -31,7 +33,7 @@ object AppUpdateUi {
             .setMessage(message)
             .setCancelable(laterButtonText != null)
             .setPositiveButton(updateButtonText) { _, _ ->
-                openPlayStore(activity, packageName)
+                if (onUpdate != null) onUpdate.run() else openPlayStore(activity, packageName)
             }
         if (laterButtonText != null) {
             builder.setNegativeButton(laterButtonText) { dialog, _ ->

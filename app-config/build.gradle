@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'za.co.mjrsolutions.shared'
-version = '1.1.0'
+version = '1.2.0'
 
 android {
     namespace 'za.co.mjrsolutions.shared.app_config'
@@ -22,6 +22,11 @@ android {
     publishing {
         singleVariant('release') { withSourcesJar() }
     }
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
 }
 
 dependencies {
@@ -29,9 +34,13 @@ dependencies {
     implementation 'com.google.firebase:firebase-firestore-ktx:25.1.1'
     implementation 'com.google.firebase:firebase-crashlytics-ktx:19.0.3'
     implementation 'androidx.appcompat:appcompat:1.7.0'
+    // Google Play In-App Updates: whether Play has a newer version, and Play's update screen.
+    implementation 'com.google.android.play:app-update:2.1.0'
 
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.jetbrains.kotlin:kotlin-test:2.1.20'
+    testImplementation 'org.robolectric:robolectric:4.11.1'
+    testImplementation 'androidx.test:core:1.6.1'
 
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'

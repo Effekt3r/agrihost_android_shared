@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The red the apps' update banner has always had. -->
+    <color name="agri_update_banner_background">#F44336</color>
+    <color name="agri_update_banner_text">#FFFFFF</color>
+    <!-- Read by TalkBack for the banner's X, in the tablet's language. -->
+    <string name="agri_update_banner_close">Close</string>
+</resources>

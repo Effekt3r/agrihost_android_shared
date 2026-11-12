@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The red app-update banner, shared by hael, vrugte and mr. Each app's main screen includes it
+    and hands it to AppUpdateBanner, which decides when it shows, its text and its X.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/agri_update_banner"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/agri_update_banner_background"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center_vertical"
+    android:minHeight="48dp"
+    android:orientation="horizontal"
+    android:visibility="gone">
+
+    <TextView
+        android:id="@+id/agri_update_banner_text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:padding="12dp"
+        android:textColor="@color/agri_update_banner_text"
+        android:textSize="15sp" />
+
+    <ImageButton
+        android:id="@+id/agri_update_banner_close"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/agri_update_banner_close"
+        android:src="@drawable/agri_ic_update_banner_close"
+        android:visibility="gone" />
+
+</LinearLayout>

@@ -148,6 +148,50 @@ object AgriAppConfig {
         }
     }
 
+    /**
+     * The per-app document's single entry point, also the unit-test seam: the typed snapshot for the
+     * app's callback, and a redraw of the update banners in view (AppUpdateBanner reads the snapshot).
+     */
+    internal fun onBundleDocument(cfg: AppConfigInit, data: Map<String, Any?>) {
+        val minVersion = data["minVersion"] as? String
+        val maintenanceMessage = data["maintenanceMessage"] as? String
+        val forceUpdate = data["forceUpdate"] as? Boolean ?: false
+        val announcementMessage = data["announcementMessage"] as? String
+        val maintenanceMode = data["maintenanceMode"] as? Boolean ?: false
+        val minSyncIntervalMinutes = (data["minSyncIntervalMinutes"] as? Number)?.toInt()
+        val debugLoggingEnabled = data["debugLoggingEnabled"] as? Boolean ?: false
+        val updateRequired = !minVersion.isNullOrBlank() &&
+            VersionCompare.compare(cfg.currentVersion, minVersion) < 0
+
+        // Extras = everything except the known typed fields
+        val known = setOf(
+            "minVersion",
+            "maintenanceMessage",
+            "forceUpdate",
+            "announcementMessage",
+            "maintenanceMode",
+            "minSyncIntervalMinutes",
+            "debugLoggingEnabled"
+        )
+        val extras = data.filterKeys { it !in known }
+
+        val snap = AppConfigSnapshot(
+            currentVersion = cfg.currentVersion,
+            minVersion = minVersion,
+            maintenanceMessage = maintenanceMessage,
+            updateRequired = updateRequired,
+            forceUpdate = forceUpdate,
+            announcementMessage = announcementMessage,
+            maintenanceMode = maintenanceMode,
+            minSyncIntervalMinutes = minSyncIntervalMinutes,
+            debugLoggingEnabled = debugLoggingEnabled,
+            extras = extras
+        )
+        latestSnapshot = snap
+        callbackRef?.onConfigChanged(snap)
+        AgriAppUpdate.notifyChanged()
+    }
+
     private fun startListening() {
         val cfg = init
         val db = FirebaseFirestore.getInstance()
@@ -165,43 +209,7 @@ object AgriAppConfig {
             if (snapshot == null) return@addSnapshotListener
 
             if (snapshot.exists()) {
-                val data = snapshot.data ?: emptyMap()
-                val minVersion = data["minVersion"] as? String
-                val maintenanceMessage = data["maintenanceMessage"] as? String
-                val forceUpdate = data["forceUpdate"] as? Boolean ?: false
-                val announcementMessage = data["announcementMessage"] as? String
-                val maintenanceMode = data["maintenanceMode"] as? Boolean ?: false
-                val minSyncIntervalMinutes = (data["minSyncIntervalMinutes"] as? Number)?.toInt()
-                val debugLoggingEnabled = data["debugLoggingEnabled"] as? Boolean ?: false
-                val updateRequired = !minVersion.isNullOrBlank() &&
-                    VersionCompare.compare(cfg.currentVersion, minVersion) < 0
-
-                // Extras = everything except the known typed fields
-                val known = setOf(
-                    "minVersion",
-                    "maintenanceMessage",
-                    "forceUpdate",
-                    "announcementMessage",
-                    "maintenanceMode",
-                    "minSyncIntervalMinutes",
-                    "debugLoggingEnabled"
-                )
-                val extras = data.filterKeys { it !in known }
-
-                val snap = AppConfigSnapshot(
-                    currentVersion = cfg.currentVersion,
-                    minVersion = minVersion,
-                    maintenanceMessage = maintenanceMessage,
-                    updateRequired = updateRequired,
-                    forceUpdate = forceUpdate,
-                    announcementMessage = announcementMessage,
-                    maintenanceMode = maintenanceMode,
-                    minSyncIntervalMinutes = minSyncIntervalMinutes,
-                    debugLoggingEnabled = debugLoggingEnabled,
-                    extras = extras
-                )
-                latestSnapshot = snap
-                callbackRef?.onConfigChanged(snap)
+                onBundleDocument(cfg, snapshot.data ?: emptyMap())
             } else {
                 // Seed the document with the current version so the web app has a baseline
                 val seed = mapOf<String, Any>("minVersion" to cfg.currentVersion)
