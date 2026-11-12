@@ -29,6 +29,10 @@ object AgriFiles {
     @JvmStatic
     fun config(): FilesConfig? = config
 
+    /** The application given to [init], for callers that have no Context at hand (mr's PDF builder). */
+    @JvmStatic
+    fun application(): Application? = app
+
     @VisibleForTesting
     internal fun resetForTest() {
         config = null

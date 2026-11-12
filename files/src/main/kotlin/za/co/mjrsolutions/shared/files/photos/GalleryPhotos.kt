@@ -61,6 +61,23 @@ object GalleryPhotos {
         return Uri.fromFile(File(text))
     }
 
+    /**
+     * The picture's bytes, from the gallery (a content URI) or an older app file (a path); null when
+     * it is gone or cannot be read. For apps that send the stored image as it is (mr's base64).
+     */
+    @JvmStatic
+    fun readBytes(context: Context, stored: String?): ByteArray? {
+        if (AuditFormat.isBlank(stored)) return null
+        return try {
+            context.contentResolver.openInputStream(readUri(stored))?.use { it.readBytes() }
+        } catch (e: java.io.FileNotFoundException) {
+            null
+        } catch (e: Exception) {
+            Report.exception(e)
+            null
+        }
+    }
+
     /** photo_{ms}.jpg (hael) or photo_{n}_{ms}.jpg (vrugte) -> ms; 0 when the name holds no time. */
     @JvmStatic
     fun msFromName(name: String?): Long {

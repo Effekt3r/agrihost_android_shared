@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Camera photos go into the gallery (Pictures) through MediaStore: no permission from
-         Android 10 up; Android 7-9 need write access to put them there. Never all-files access. -->
+    <!-- Storage, by Android version (StoragePermissions.required asks for exactly these):
+         Android 9 and older need write + read for the camera's gallery row; Android 10-12 need
+         nothing for the app's own rows and files, read opens gallery photos a previous install
+         took; Android 13+ has no READ_EXTERNAL_STORAGE for apps. Never all-files access.
+         READ is declared here (not left implied by WRITE) so it stays capped at Android 12. -->
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 

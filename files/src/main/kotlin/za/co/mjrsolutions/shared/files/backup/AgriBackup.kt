@@ -81,6 +81,23 @@ object AgriBackup {
         }
     }
 
+    /** [pdfCreated] for code without a Context at hand: uses the application given to AgriFiles.init. */
+    @JvmStatic
+    fun pdfCreated(pdf: File?, info: PdfInfo?) {
+        pdfCreated(AgriFiles.application(), pdf, info)
+    }
+
+    /**
+     * A sync tap that sends every report (mr): every photo and PDF not copied yet goes now, on
+     * mobile data too. (hael's Sync Photos is per report: [runForReport].)
+     */
+    @JvmStatic
+    fun runNow(context: Context?) {
+        if (context == null) return
+        val app = context.applicationContext
+        execute { pass(app)?.run(wifiOnly = false, onlyReport = null) }
+    }
+
     /** The Wi-Fi job's work: full passes while on Wi-Fi until nothing new was asked for. */
     internal fun runWifiPass(context: Context, done: () -> Unit) {
         val app = context.applicationContext
